@@ -1,0 +1,82 @@
+# Voice configuration for TTS systems
+# This file maps voice IDs to actual voice files/models
+
+voices:
+  kokoro:
+    # English voices
+    en-US-kokoro:
+      path: "~/.local/share/voices/kokoro/en-US.wav"
+      language: "en"
+      gender: "neutral"
+      sample_rate: 24000
+      
+    en-GB-kokoro:
+      path: "~/.local/share/voices/kokoro/en-GB.wav"
+      language: "en"
+      gender: "neutral"
+      sample_rate: 24000
+
+    # French voices  
+    fr-FR-kokoro:
+      path: "~/.local/share/voices/kokoro/fr-FR.wav"
+      language: "fr"
+      gender: "neutral"
+      sample_rate: 24000
+
+  piper:
+    # English voices
+    en-US-lessac-medium:
+      path: "~/.local/share/voices/piper/en_US-lessac-medium.onnx"
+      config: "~/.local/share/voices/piper/en_US-lessac-medium.onnx.json"
+      language: "en"
+      gender: "male"
+      quality: "medium"
+      
+    en-US-amy-medium:
+      path: "~/.local/share/voices/piper/en_US-amy-medium.onnx"
+      config: "~/.local/share/voices/piper/en_US-amy-medium.onnx.json"
+      language: "en"
+      gender: "female"
+      quality: "medium"
+
+    # French voices
+    fr-FR-siwis-medium:
+      path: "~/.local/share/voices/piper/fr_FR-siwis-medium.onnx"
+      config: "~/.local/share/voices/piper/fr_FR-siwis-medium.onnx.json"
+      language: "fr"
+      gender: "female"
+      quality: "medium"
+      
+    fr-FR-upmc-medium:
+      path: "~/.local/share/voices/piper/fr_FR-upmc-medium.onnx"
+      config: "~/.local/share/voices/piper/fr_FR-upmc-medium.onnx.json"
+      language: "fr"
+      gender: "male"
+      quality: "medium"
+
+# Default voice selection by language
+default_voices:
+  en: "en-US-kokoro"  # Primary English voice
+  fr: "fr-FR-kokoro"  # Primary French voice
+
+# Fallback chain for each TTS system
+fallback_chain:
+  kokoro:
+    - "kokoro"
+    - "piper"  
+    - "noop"
+  piper:
+    - "piper"
+    - "noop"
+  noop:
+    - "noop"
+
+# Voice download URLs (for automatic setup)
+downloads:
+  piper:
+    en-US-lessac-medium:
+      model_url: "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx"
+      config_url: "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json"
+    fr-FR-siwis-medium:
+      model_url: "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx"
+      config_url: "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx.json"

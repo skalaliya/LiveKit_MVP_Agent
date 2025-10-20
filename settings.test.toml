@@ -1,0 +1,50 @@
+# Test configuration for LiveKit MVP Agent
+# Uses smaller models and mock components for testing
+
+[audio]
+sample_rate = 16000
+channels = 1
+chunk_size = 1024
+buffer_size = 4096
+
+[stt]
+# Use tiny model for testing (much smaller download ~40MB vs 1.5GB)
+model = "tiny"
+device = "cpu"
+compute_type = "int8"
+language = "auto"
+
+[llm]
+# Default Ollama config (only loads if server available)
+model = "llama3.1:8b-instruct-q4_K_M"
+fallback_model = "mistral:7b"
+base_url = "http://localhost:11434"
+temperature = 0.7
+max_tokens = 512
+timeout_seconds = 30
+
+[tts]
+# TTS config with fallbacks
+primary = "kokoro"
+fallback = "piper"
+final_fallback = "noop"
+
+[vad]
+# VAD settings
+threshold = 0.5
+min_speech_duration_ms = 250
+max_speech_duration_ms = 30000
+
+[livekit]
+# LiveKit configuration (optional for testing)
+url = "ws://localhost:7880"
+api_key = "${LIVEKIT_API_KEY}"
+api_secret = "${LIVEKIT_API_SECRET}"
+room_name = "${LIVEKIT_ROOM_NAME:voice-agent-room}"
+
+[agent]
+# Agent behavior
+conversation_timeout_seconds = 300
+response_timeout_seconds = 10
+language_detection = true
+languages = ["en", "fr"]

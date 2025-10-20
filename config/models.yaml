@@ -1,0 +1,213 @@
+# Model configuration for STT and LLM systems
+
+whisper:
+  # Available models and their specifications
+  models:
+    tiny:
+      size: "39 MB"
+      languages: ["en"]
+      vram: "1 GB"
+      relative_speed: "32x"
+      
+    tiny.en:
+      size: "39 MB" 
+      languages: ["en"]
+      vram: "1 GB"
+      relative_speed: "32x"
+      
+    base:
+      size: "74 MB"
+      languages: ["multilingual"]
+      vram: "1 GB"
+      relative_speed: "16x"
+      
+    base.en:
+      size: "74 MB"
+      languages: ["en"]
+      vram: "1 GB"
+      relative_speed: "16x"
+      
+    small:
+      size: "244 MB"
+      languages: ["multilingual"]
+      vram: "2 GB"
+      relative_speed: "6x"
+      
+    small.en:
+      size: "244 MB"
+      languages: ["en"]
+      vram: "2 GB"
+      relative_speed: "6x"
+      
+    medium:
+      size: "769 MB"
+      languages: ["multilingual"]
+      vram: "5 GB"
+      relative_speed: "2x"
+      
+    medium.en:
+      size: "769 MB"
+      languages: ["en"]
+      vram: "5 GB"
+      relative_speed: "2x"
+      
+    large-v1:
+      size: "1550 MB"
+      languages: ["multilingual"]
+      vram: "10 GB"
+      relative_speed: "1x"
+      
+    large-v2:
+      size: "1550 MB"
+      languages: ["multilingual"]
+      vram: "10 GB"
+      relative_speed: "1x"
+      
+    large-v3:
+      size: "1550 MB"
+      languages: ["multilingual"]
+      vram: "10 GB"
+      relative_speed: "1x"
+
+  # Compute type configurations
+  compute_types:
+    int8:
+      description: "8-bit integer quantization"
+      memory_usage: "low"
+      speed: "fast"
+      quality: "good"
+      
+    int8_float16:
+      description: "8-bit integer with float16 fallback"
+      memory_usage: "low-medium"
+      speed: "fast"
+      quality: "good"
+      
+    int16:
+      description: "16-bit integer quantization"
+      memory_usage: "medium"
+      speed: "medium"
+      quality: "better"
+      
+    float16:
+      description: "16-bit floating point"
+      memory_usage: "medium"
+      speed: "medium"
+      quality: "better"
+      
+    float32:
+      description: "32-bit floating point"
+      memory_usage: "high"
+      speed: "slow"
+      quality: "best"
+
+  # Default configurations by use case
+  presets:
+    fast:
+      model: "base"
+      compute_type: "int8"
+      
+    balanced:
+      model: "medium"
+      compute_type: "int8"
+      
+    quality:
+      model: "large-v3"
+      compute_type: "float16"
+      
+    multilingual:
+      model: "medium"
+      compute_type: "int8"
+      
+    english_only:
+      model: "medium.en"
+      compute_type: "int8"
+
+ollama:
+  # LLM model configurations
+  models:
+    # Llama models
+    "llama3.1:8b":
+      size: "4.7 GB"
+      context: "128K"
+      languages: ["en", "fr", "es", "de", "it", "pt", "hi", "th"]
+      quantization: "Q4_0"
+      
+    "llama3.1:8b-instruct-q4_K_M":
+      size: "4.9 GB"
+      context: "128K"
+      languages: ["en", "fr", "es", "de", "it", "pt", "hi", "th"]
+      quantization: "Q4_K_M"
+      recommended: true
+      
+    "llama3.1:70b-instruct-q4_K_M":
+      size: "40 GB"
+      context: "128K"
+      languages: ["en", "fr", "es", "de", "it", "pt", "hi", "th"]
+      quantization: "Q4_K_M"
+      
+    # Mistral models
+    "mistral:7b":
+      size: "4.1 GB"
+      context: "32K"
+      languages: ["en", "fr", "de", "es", "it"]
+      quantization: "Q4_0"
+      
+    "mistral:7b-instruct-q4_K_M":
+      size: "4.4 GB"
+      context: "32K"
+      languages: ["en", "fr", "de", "es", "it"]
+      quantization: "Q4_K_M"
+      fallback: true
+      
+    # Code models
+    "codellama:7b-instruct":
+      size: "3.8 GB"
+      context: "16K"
+      languages: ["code"]
+      quantization: "Q4_0"
+
+  # Quantization levels
+  quantization:
+    Q2_K:
+      description: "Smallest, significant quality loss"
+      size_reduction: "~75%"
+      
+    Q3_K_M:
+      description: "Medium, balanced quality/size"  
+      size_reduction: "~60%"
+      
+    Q4_0:
+      description: "Legacy format, good quality"
+      size_reduction: "~50%"
+      
+    Q4_K_M:
+      description: "Recommended, good quality"
+      size_reduction: "~45%"
+      recommended: true
+      
+    Q5_K_M:
+      description: "High quality, larger size"
+      size_reduction: "~35%"
+      
+    Q6_K:
+      description: "Very high quality"
+      size_reduction: "~25%"
+      
+    Q8_0:
+      description: "Almost original quality"
+      size_reduction: "~15%"
+
+  # Model selection strategy
+  selection:
+    primary: "llama3.1:8b-instruct-q4_K_M"
+    fallback: "mistral:7b-instruct-q4_K_M"
+    
+    # Auto-selection based on available memory
+    auto_select:
+      - memory_gb: 16
+        models: ["llama3.1:8b-instruct-q4_K_M", "mistral:7b-instruct-q4_K_M"]
+      - memory_gb: 8
+        models: ["mistral:7b-instruct-q4_K_M"]
+      - memory_gb: 4
+        models: ["mistral:7b-instruct-q4_K_M"]
