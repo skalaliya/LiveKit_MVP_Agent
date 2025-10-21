@@ -1,10 +1,12 @@
-.PHONY: help setup run clean lint typecheck test fmt start-ollama pull-model stop-ollama webui docker-build docker-up docker-down docker-logs
+.PHONY: help setup run run-offline run-standalone run-dry clean lint typecheck test fmt start-ollama pull-model stop-ollama webui docker-build docker-up docker-down docker-logs
 
 # Default target
 help:
 	@echo "Available targets:"
 	@echo "  setup          - Install dependencies and initialize project"
-	@echo "  run            - Run the voice agent"
+	@echo "  run            - Run the voice agent (requires LiveKit)"
+	@echo "  run-standalone - Run without LiveKit (local mode)"
+	@echo "  run-dry        - Dry-run (check config only)"
 	@echo "  clean          - Clean cache and temporary files"
 	@echo "  lint           - Run ruff linter"
 	@echo "  typecheck      - Run mypy type checker"
@@ -25,7 +27,7 @@ help:
 	@echo "  docker-logs    - View WebUI logs"
 
 # Environment variables
-LLM_MODEL ?= llama3.1:8b-instruct-q4_K_M
+LLM_MODEL ?= llama3.2:3b-instruct-q4_K_M
 WHISPER_MODEL ?= medium
 
 # Setup and installation
@@ -42,6 +44,14 @@ run:
 run-offline:
 	@echo "Starting voice agent (offline, no LiveKit)..."
 	PYTHONPATH=src uv run python -m livekit_mvp_agent.app --no-livekit
+
+run-standalone:
+	@echo "Starting voice agent (standalone, no LiveKit)..."
+	PYTHONPATH=src uv run python -m livekit_mvp_agent.app --no-livekit
+
+run-dry:
+	@echo "Dry-run (init only)..."
+	PYTHONPATH=src uv run python -m livekit_mvp_agent.app --dry-run
 
 # Development tools
 lint:

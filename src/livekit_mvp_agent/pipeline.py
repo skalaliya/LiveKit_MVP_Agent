@@ -46,11 +46,19 @@ class VoicePipeline:
     def _build_tts(self):
         if self.settings.tts_primary.lower() == "elevenlabs":
             return ElevenLabsTTS(
-                api_key=getattr(self.settings, 'elevenlabs_api_key', None),
-                voice_id=getattr(self.settings, 'elevenlabs_voice_id', '21m00Tcm4TlvDq8ikWAM'),
-                model_id=getattr(self.settings, 'tts_model', 'eleven_flash_v2_5'),
+                api_key=self.settings.elevenlabs_api_key,
+                voice_id=self.settings.elevenlabs_voice_id,
+                model_id=self.settings.tts_model,
             )
-        # TODO: add kokoro/piper here as desired; for now, NoOp if not elevenlabs.
+        elif self.settings.tts_primary.lower() == "kokoro":
+            return KokoroTTS(
+                primary_system="kokoro",
+                fallback_system=self.settings.tts_fallback,
+                voice=self.settings.tts_voice,
+                speed=self.settings.tts_speed
+            )
+        # TODO: add piper here if needed
+        logger.warning(f"Unknown TTS primary: {self.settings.tts_primary}, using NoOp")
         return None
     
     async def start(self) -> None:
