@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🇫🇷 French Tutor - Interactive Language Learning</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🇫🇷 French Tutor</h1>
+            <p class="subtitle">Interactive A2/B1 Language Learning</p>
+        </header>
+
+        <div class="controls">
+            <div class="control-row">
+                <button id="talkBtn" class="btn btn-primary" disabled>
+                    <span class="icon">🎤</span>
+                    <span id="talkText">Hold to Talk</span>
+                </button>
+                
+                <label class="checkbox-label">
+                    <input type="checkbox" id="autoMode">
+                    <span>Auto Mode</span>
+                </label>
+
+                <div class="level-toggle">
+                    <button id="levelA2" class="btn-level active">A2</button>
+                    <button id="levelB1" class="btn-level">B1</button>
+                </div>
+
+                <div class="slider-group">
+                    <label>Difficulty: <span id="difficultyValue">2</span></label>
+                    <input type="range" id="difficulty" min="1" max="5" value="2" step="1">
+                </div>
+            </div>
+
+            <div class="control-row">
+                <div class="select-group">
+                    <label for="targetLang">Target Language:</label>
+                    <select id="targetLang">
+                        <option value="fr" selected>🇫🇷 French</option>
+                        <option value="en">🇬🇧 English</option>
+                        <option value="es">🇪🇸 Spanish</option>
+                        <option value="de">🇩🇪 German</option>
+                        <option value="it">🇮🇹 Italian</option>
+                    </select>
+                </div>
+
+                <div class="select-group">
+                    <label for="topic">Topic:</label>
+                    <select id="topic">
+                        <option value="free" selected>Free Conversation</option>
+                        <option value="travel">✈️ Travel</option>
+                        <option value="cafe">☕ Café</option>
+                        <option value="shopping">🛍️ Shopping</option>
+                        <option value="work">💼 Work</option>
+                        <option value="doctor">🏥 Doctor</option>
+                        <option value="directions">🗺️ Directions</option>
+                        <option value="restaurant">🍽️ Restaurant</option>
+                        <option value="smalltalk">💬 Small Talk</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="teaching-controls">
+                <button id="repeatBtn" class="btn btn-secondary" title="Repeat last response">
+                    <span class="icon">↻</span> Repeat
+                </button>
+                <button id="slowerBtn" class="btn btn-secondary" title="Speak more slowly">
+                    <span class="icon">🐢</span> Slower
+                </button>
+                <button id="fasterBtn" class="btn btn-secondary" title="Speak faster">
+                    <span class="icon">⚡</span> Faster
+                </button>
+                <button id="explainBtn" class="btn btn-secondary" title="Explain in English">
+                    <span class="icon">💡</span> Explain
+                </button>
+                <button id="translateBtn" class="btn btn-secondary" title="Translate">
+                    <span class="icon">🔁</span> Translate
+                </button>
+                <button id="saveVocabBtn" class="btn btn-secondary" title="Save last term">
+                    <span class="icon">⭐</span> Save Vocab
+                </button>
+                <button id="exportBtn" class="btn btn-secondary" title="Export session">
+                    <span class="icon">⬇</span> Export
+                </button>
+                <button id="clearBtn" class="btn btn-danger" title="Clear session">
+                    <span class="icon">🗑️</span> Clear
+                </button>
+            </div>
+        </div>
+
+        <div class="transcripts">
+            <div class="transcript-pane">
+                <h2>You 🗣️</h2>
+                <div id="userTranscript" class="transcript-content"></div>
+            </div>
+            <div class="transcript-pane">
+                <h2>Tutor 🎓</h2>
+                <div id="tutorTranscript" class="transcript-content"></div>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <span id="status">Ready</span>
+            <span id="audio-indicator" class="audio-indicator"></span>
+        </div>
+
+        <audio id="audioPlayer" preload="auto"></audio>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

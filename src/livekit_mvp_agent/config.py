@@ -40,8 +40,9 @@ class LLMConfig(BaseModel):
 
 class TTSConfig(BaseModel):
     """Text-to-Speech configuration"""
-    primary: str = Field(default="kokoro", description="Primary TTS system")
+    primary: str = Field(default="elevenlabs", description="Primary TTS system")
     fallback: str = Field(default="piper", description="Fallback TTS system")
+    model: str = Field(default="eleven_flash_v2_5", description="TTS model name")
     voice: str = Field(default="en-US-kokoro", description="Voice ID")
     speed: float = Field(default=1.0, description="Speech speed multiplier")
     quality: str = Field(default="medium", description="Audio quality setting")
@@ -122,10 +123,15 @@ class Settings(BaseSettings):
     llm_max_tokens: int = Field(default=512, env="LLM_MAX_TOKENS")
     
     # TTS
-    tts_primary: str = Field(default="kokoro", env="TTS_PRIMARY")
+    tts_primary: str = Field(default="elevenlabs", env="TTS_PRIMARY")
     tts_fallback: str = Field(default="piper", env="TTS_FALLBACK")
+    tts_model: str = Field(default="eleven_flash_v2_5", env="TTS_MODEL")
     tts_voice: str = Field(default="en-US-kokoro", env="TTS_VOICE")
     tts_speed: float = Field(default=1.0, env="TTS_SPEED")
+    
+    # ElevenLabs specific
+    elevenlabs_api_key: Optional[str] = Field(default=None, env="ELEVENLABS_API_KEY")
+    elevenlabs_voice_id: str = Field(default="21m00Tcm4TlvDq8ikWAM", env="ELEVENLABS_VOICE_ID")
     
     # VAD
     vad_threshold: float = Field(default=0.5, env="VAD_THRESHOLD")
@@ -244,8 +250,22 @@ def get_settings(config_file: Optional[Union[str, Path]] = None) -> Settings:
             system=SystemConfig(**system_config),
             performance=PerformanceConfig(**performance_config),
         )
+        
+        # Update nested TTS config with environment values
+        _settings_instance.tts.primary = _settings_instance.tts_primary
+        _settings_instance.tts.fallback = _settings_instance.tts_fallback  
+        _settings_instance.tts.model = _settings_instance.tts_model
+        _settings_instance.tts.voice = _settings_instance.tts_voice
+        _settings_instance.tts.speed = _settings_instance.tts_speed
     else:
         _settings_instance = Settings()
+        
+        # Update nested TTS config with environment values  
+        _settings_instance.tts.primary = _settings_instance.tts_primary
+        _settings_instance.tts.fallback = _settings_instance.tts_fallback
+        _settings_instance.tts.model = _settings_instance.tts_model  
+        _settings_instance.tts.voice = _settings_instance.tts_voice
+        _settings_instance.tts.speed = _settings_instance.tts_speed
     
     return _settings_instance
 
@@ -254,3 +274,7 @@ def reset_settings() -> None:
     """Reset settings instance (useful for testing)"""
     global _settings_instance
     _settings_instance = None
+
+
+# Alias for backward compatibility
+AgentConfig = Settings

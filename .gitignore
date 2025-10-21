@@ -74,6 +74,12 @@ tmp/
 *.wav
 *.mp3
 *.flac
+*.webm
+*.ogg
+*.m4a
+
+# Artifacts
+artifacts/
 
 # Model files
 models/

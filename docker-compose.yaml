@@ -46,8 +46,44 @@ services:
       retries: 3
       start_period: 40s
 
+  # French Tutor WebUI (FastAPI + Whisper + Ollama + ElevenLabs)
+  webui:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.webui
+    container_name: livekit_mvp_webui
+    ports:
+      - "8000:8000"
+    volumes:
+      - hf_cache:/root/.cache/huggingface  # Persist Whisper models
+      - ./artifacts:/app/artifacts  # Session exports and vocab
+    environment:
+      - LLM_MODEL=${LLM_MODEL:-llama3.2:3b}
+      - LLM_FALLBACK=${LLM_FALLBACK:-mistral:7b-instruct-q4_K_M}
+      - WHISPER_MODEL=${WHISPER_MODEL:-medium}
+      - WHISPER_DEVICE=${WHISPER_DEVICE:-cpu}
+      - WHISPER_COMPUTE_TYPE=${WHISPER_COMPUTE_TYPE:-int8}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - TTS_PRIMARY=${TTS_PRIMARY:-elevenlabs}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY:-}
+      - ELEVENLABS_VOICE_ID=${ELEVENLABS_VOICE_ID:-21m00Tcm4TlvDq8ikWAM}
+      - ELEVENLABS_TTS_MODEL=${ELEVENLABS_TTS_MODEL:-eleven_flash_v2_5}
+      - SAMPLE_RATE=${SAMPLE_RATE:-16000}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    depends_on:
+      - ollama
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s  # Give Whisper time to download on first run
+
 volumes:
   ollama_data:
+    driver: local
+  hf_cache:
     driver: local
 
 # Default profile (tries GPU first, falls back to CPU)

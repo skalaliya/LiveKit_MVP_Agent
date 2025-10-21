@@ -1,0 +1,55 @@
+# Dockerfile for French Tutor WebUI
+# Python 3.11 + FastAPI + Whisper + Ollama client + ElevenLabs TTS
+
+FROM python:3.11-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    libsndfile1 \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv package manager and add to PATH
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    mv /root/.local/bin/uv /usr/local/bin/uv
+ENV PATH="/root/.cargo/bin:$PATH"
+
+# Set working directory
+WORKDIR /app
+
+# Copy dependency files AND README (required by pyproject.toml)
+COPY pyproject.toml uv.lock README.md ./
+
+# Install Python dependencies
+RUN uv sync --frozen
+
+# Copy application code
+COPY src/ src/
+COPY www/ www/
+
+# Set default environment variables
+ENV LLM_MODEL=llama3.2:3b
+ENV LLM_FALLBACK=mistral:7b-instruct-q4_K_M
+ENV WHISPER_MODEL=medium
+ENV WHISPER_DEVICE=cpu
+ENV WHISPER_COMPUTE_TYPE=int8
+ENV OLLAMA_BASE_URL=http://ollama:11434
+ENV TTS_PRIMARY=elevenlabs
+ENV SAMPLE_RATE=16000
+ENV ELEVENLABS_VOICE_ID=21m00Tcm4TlvDq8ikWAM
+ENV ELEVENLABS_TTS_MODEL=eleven_flash_v2_5
+
+# Create artifacts directory
+RUN mkdir -p /app/artifacts/sessions
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Run server
+CMD ["uv", "run", "uvicorn", "livekit_mvp_agent.webui.server:app", "--host", "0.0.0.0", "--port", "8000"]

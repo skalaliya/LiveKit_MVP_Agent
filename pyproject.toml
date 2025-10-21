@@ -29,6 +29,11 @@ dependencies = [
     "pydub>=0.25.1",
     "websockets>=15.0.1",
     "python-dotenv>=1.1.1",
+    "pyside6>=6.10.0",
+    "sounddevice>=0.5.3",
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "python-multipart>=0.0.6",
 ]
 
 [project.optional-dependencies]

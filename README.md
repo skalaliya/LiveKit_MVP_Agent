@@ -43,23 +43,131 @@ graph LR
 
 ### Prerequisites
 - **Python 3.11+** 🐍
-- **Docker Desktop** 🐳 (for full voice mode)
-- **ElevenLabs API Key** 🔑 (for premium audio)
+- **Ollama** 🦙 (for local AI - install via homebrew or Docker)
+- **ElevenLabs API Key** 🔑 (optional, for premium TTS)
 
-### Installation
+### 🌐 Web UI (Recommended) - Native Setup
+
+**The easiest way to run the French Tutor!** Browser-based interface with teaching controls.
+
 ```bash
-git clone <your-repo>
+# 1. Clone and setup
+git clone https://github.com/skalaliya/LiveKit_MVP_Agent.git
 cd LiveKit_MVP_Agent
 make setup
+
+# 2. Install and start Ollama (if not already installed)
+brew install ollama
+ollama serve  # Run in background or separate terminal
+
+# 3. Pull LLM model (first time only, ~2GB)
+ollama pull llama3.2:3b
+
+# 4. Start WebUI
+make webui
+
+# 5. Open in browser
+open http://localhost:8000
+```
+
+**🎯 What you get:**
+- 🎤 **Hold-to-Talk** button for voice input (browser mic)
+- 🗣️ **Speech-to-Text** with faster-whisper (auto-initializes)
+- 🧠 **AI Tutor** with Ollama llama3.2:3b
+- 🇫🇷 **5 Languages**: French, English, Spanish, German, Italian
+- 📚 **A2/B1 CEFR levels** with 1-5 difficulty slider
+- 📝 **8 Topic presets**: Travel, Café, Shopping, Work, Doctor, Directions, Restaurant, Small Talk
+- 🎛️ **Teaching controls**:
+  - ↻ **Repeat**: Hear last response again
+  - 🐢 **Slower** / ⚡ **Faster**: Adjust complexity
+  - 💡 **Explain**: Get English explanation
+  - 🔁 **Translate**: Translate to English
+  - ⭐ **Save Vocab**: Track vocabulary
+  - ⬇ **Export**: Download session JSON
+  - 🗑️ **Clear**: Reset conversation
+- 💬 **Dual transcripts** (You 🗣️ + Tutor 🎓)
+- 🎨 **Dark theme** responsive UI
+
+**🔑 Optional: Add ElevenLabs TTS for Voice Output**
+```bash
+# Add to .env file
+echo "ELEVENLABS_API_KEY=sk_your_key_here" >> .env
+
+# Restart WebUI (Ctrl+C and run make webui again)
+```
+
+**📱 Platform Support:**
+- ✅ **macOS**: Native (Apple Silicon + Intel) - Recommended!
+- ✅ **Linux**: Native setup
+- ✅ **Windows**: WSL2 recommended
+- ✅ **GitHub Codespaces**: Works out of the box!
+
+**⚡ Performance:**
+- **First request**: 10-20 seconds (Whisper model loads)
+- **Subsequent**: 3-7 seconds per interaction
+- **Memory**: ~4GB (Whisper + LLM)
+
+---
+
+### 🐳 Docker Alternative (Optional)
+
+If you prefer Docker (requires Docker Desktop):
+
+```bash
+# Build and start
+make docker-build
+make docker-up
+
+# Pull model
+make pull-model LLM=llama3.2:3b
+
+# Open browser
+open http://localhost:8000
+```
+
+**Note**: Docker setup may have I/O issues on some systems. Native setup is recommended for best performance.
+
+---
+
+### 💬 Text-Only Mode (Lightweight)
+
+```bash
+# Simple text chat (no voice, no Docker)
+make talk
 ```
 
 ---
 
-## 🎭 Demo Modes
+## 🎭 Usage Modes
 
 Choose your adventure! Each mode offers a different experience:
 
-### 1. 🎪 **Interactive Voice Demo** 
+### 1. 🌐 **French Tutor WebUI** (Recommended)
+> **What's happening behind the scenes:** FastAPI + faster-whisper STT + Ollama LLM + Browser interface
+
+```bash
+make webui
+```
+
+**🎬 Experience:**
+- Click "Hold to Talk" to record voice
+- AI transcribes and responds in French
+- Teaching controls (Repeat, Slower, Explain, Translate)
+- A2/B1 adaptive difficulty
+- Vocabulary tracking and session export
+- Works in any modern browser
+
+**🔧 Tech Stack:**
+- ✅ **Frontend**: Vanilla HTML/CSS/JS (no framework!)
+- ✅ **Backend**: FastAPI REST API
+- ✅ **STT**: faster-whisper (local, multilingual)
+- ✅ **LLM**: Ollama llama3.2:3b (local inference)
+- ✅ **TTS**: ElevenLabs (optional, with API key)
+- ✅ **Audio**: PyAV for WebM decoding
+
+---
+
+### 2. 🎪 **Interactive Voice Demo** 
 > **What's happening behind the scenes:** ElevenLabs TTS + Mock conversations + Audio generation
 
 ```bash
@@ -80,7 +188,7 @@ uv run python voice_demo.py
 
 ---
 
-### 2. 💬 **Text Chat Agent**
+### 3. 💬 **Text Chat Agent**
 > **What's happening behind the scenes:** Local LLM processing + Simple text interface
 
 ```bash
@@ -100,7 +208,7 @@ make talk
 
 ---
 
-### 3. 🎙️ **Full Voice Agent** (Complete Experience)
+### 4. 🎙️ **Full Voice Agent** (LiveKit Real-time)
 > **What's happening behind the scenes:** LiveKit WebRTC + Ollama LLM + ElevenLabs Audio + Real-time streaming
 
 ```bash
@@ -125,7 +233,7 @@ make run
 
 ---
 
-### 4. 🧪 **ElevenLabs Testing Suite**
+### 5. 🧪 **ElevenLabs Testing Suite**
 > **What's happening behind the scenes:** API testing + Configuration validation + Audio generation
 
 ```bash
