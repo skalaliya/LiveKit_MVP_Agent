@@ -1,4 +1,4 @@
-.PHONY: help setup run run-offline run-standalone run-dry clean lint typecheck test fmt start-ollama pull-model stop-ollama webui docker-build docker-up docker-down docker-logs
+.PHONY: help setup run run-offline run-standalone run-dry clean lint typecheck test fmt start-ollama pull-model stop-ollama webui docker-build docker-up docker-down docker-logs tts-smoke
 
 # Default target
 help:
@@ -18,6 +18,7 @@ help:
 	@echo "  check-config   - Check .env configuration"
 	@echo "  test-elevenlabs - Test ElevenLabs integration"
 	@echo "  talk           - Start interactive chat with agent"
+	@echo "  tts-smoke      - Run ElevenLabs smoke test"
 	@echo ""
 	@echo "WebUI targets:"
 	@echo "  webui          - Run WebUI locally (no Docker)"
@@ -70,6 +71,10 @@ fmt:
 	@echo "Formatting code..."
 	uv run ruff format src/ tests/
 	uv run ruff check --fix src/ tests/
+
+tts-smoke:
+	@echo "Running ElevenLabs TTS smoke test..."
+	PYTHONPATH=src uv run python scripts/tts_smoke.py
 
 # Docker and model management
 start-ollama:

@@ -6,7 +6,7 @@ import os
 import toml
 from pathlib import Path
 from typing import Optional, Union
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, AliasChoices
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -131,7 +131,62 @@ class Settings(BaseSettings):
     
     # ElevenLabs specific
     elevenlabs_api_key: Optional[str] = Field(default=None, env="ELEVENLABS_API_KEY")
-    elevenlabs_voice_id: str = Field(default="21m00Tcm4TlvDq8ikWAM", env="ELEVENLABS_VOICE_ID")
+    elevenlabs_model: str = Field(
+        default="eleven_flash_v2_5",
+        validation_alias=AliasChoices("ELEVENLABS_TTS_MODEL", "TTS_MODEL"),
+    )
+    elevenlabs_voice_id: str = Field(
+        default="21m00Tcm4TlvDq8ikWAM",
+        validation_alias=AliasChoices("ELEVENLABS_TTS_VOICE_ID", "ELEVENLABS_VOICE_ID", "TTS_VOICE"),
+    )
+    elevenlabs_voice_en_female: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("ELEVENLABS_VOICE_EN_FEMALE"),
+    )
+    elevenlabs_voice_en_male: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("ELEVENLABS_VOICE_EN_MALE"),
+    )
+    elevenlabs_voice_fr_female: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("ELEVENLABS_VOICE_FR_FEMALE"),
+    )
+    elevenlabs_voice_fr_male: Optional[str] = Field(
+        default=None,
+        validation_alias=AliasChoices("ELEVENLABS_VOICE_FR_MALE"),
+    )
+    elevenlabs_learning_mode: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("ELEVENLABS_LEARNING_MODE"),
+    )
+    elevenlabs_tts_timeout: int = Field(
+        default=30,
+        validation_alias=AliasChoices("ELEVENLABS_TTS_TIMEOUT"),
+    )
+    elevenlabs_tts_stability: float = Field(
+        default=0.6,
+        validation_alias=AliasChoices("ELEVENLABS_TTS_STABILITY"),
+    )
+    elevenlabs_tts_similarity: float = Field(
+        default=0.8,
+        validation_alias=AliasChoices("ELEVENLABS_TTS_SIMILARITY_BOOST"),
+    )
+    elevenlabs_tts_style: float = Field(
+        default=0.1,
+        validation_alias=AliasChoices("ELEVENLABS_TTS_STYLE"),
+    )
+    elevenlabs_tts_use_speaker_boost: bool = Field(
+        default=True,
+        validation_alias=AliasChoices("ELEVENLABS_TTS_USE_SPEAKER_BOOST"),
+    )
+    elevenlabs_output_format: str = Field(
+        default="mp3_22050_32",
+        validation_alias=AliasChoices("ELEVENLABS_OUTPUT_FORMAT"),
+    )
+    elevenlabs_opt_latency: int = Field(
+        default=4,
+        validation_alias=AliasChoices("ELEVENLABS_OPT_LATENCY"),
+    )
     
     # VAD
     vad_threshold: float = Field(default=0.5, env="VAD_THRESHOLD")

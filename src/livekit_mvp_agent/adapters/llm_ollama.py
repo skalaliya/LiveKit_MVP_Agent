@@ -23,12 +23,15 @@ class OllamaLLM:
     - Streaming responses
     - Model fallback
     - Conversation history
+    - Accepts both `model` and `model_name` parameters (for compatibility)
     """
     
     def __init__(
         self,
         base_url: str = "http://localhost:11434",
-        model: str = "llama3.1:8b-instruct-q4_K_M",
+        model: Optional[str] = None,
+        *,
+        model_name: Optional[str] = None,
         fallback_model: Optional[str] = None,
         temperature: float = 0.7,
         max_tokens: int = 512,
@@ -40,8 +43,9 @@ class OllamaLLM:
                 "Install with: pip install httpx"
             )
         
+        # Accept either `model` or the legacy alias `model_name`
+        self.model = model or model_name or "llama3.2:3b"
         self.base_url = base_url.rstrip("/")
-        self.model = model
         self.fallback_model = fallback_model
         self.temperature = temperature
         self.max_tokens = max_tokens
@@ -338,10 +342,11 @@ class OllamaLLM:
                     yield token
     
     async def generate(
-        self, 
-        prompt: str, 
+        self,
+        prompt: Optional[str] = None,
         model: Optional[str] = None,
-        system_prompt: Optional[str] = None
+        system_prompt: Optional[str] = None,
+        **kwargs: Any,
     ) -> Optional[str]:
         """
         Generate text from prompt
@@ -354,6 +359,14 @@ class OllamaLLM:
         Returns:
             Generated text or None if failed
         """
+        messages = kwargs.pop("messages", None)
+
+        if messages and not prompt:
+            prompt = "\n".join(f"{msg.get('role', 'user').upper()}: {msg.get('content', '')}" for msg in messages)
+
+        if prompt is None:
+            raise TypeError("generate() requires either 'prompt' or 'messages'.")
+
         # Convert to chat format
         messages = []
         

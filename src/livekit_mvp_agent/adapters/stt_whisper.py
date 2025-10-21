@@ -2,10 +2,19 @@
 Whisper STT Adapter using faster-whisper
 """
 
+from __future__ import annotations
+
 import asyncio
+import io
 import logging
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Tuple
+import threading
 import numpy as np
+
+try:
+    import soundfile as sf
+except ImportError:
+    sf = None
 
 try:
     import faster_whisper
@@ -22,13 +31,17 @@ class WhisperSTT:
     - Real-time streaming transcription
     - Multilingual (EN/FR) auto-detection
     - Various model sizes and quantization levels
+    - Accepts both `model` and `model_name` parameters (for compatibility)
     """
     
     def __init__(
         self,
-        model: str = "medium",
-        device: str = "auto",
+        model: Optional[str] = None,
+        *,
+        model_name: Optional[str] = None,
+        device: Optional[str] = None,
         compute_type: str = "int8",
+        sample_rate: int = 16000,
         language: Optional[str] = None,
         vad_filter: bool = True,
     ):
@@ -38,10 +51,12 @@ class WhisperSTT:
                 "Install with: pip install faster-whisper"
             )
         
-        self.model_name = model
-        self.device = device
+        # Accept either `model` or the legacy alias `model_name`
+        self.model_name = model or model_name or "base"
+        self.device = device or "auto"
         self.compute_type = compute_type
-        self.language = language
+        self.sample_rate = int(sample_rate)
+        self.language = language if language else "auto"
         self.vad_filter = vad_filter
         self.logger = logging.getLogger(__name__)
         
@@ -51,6 +66,7 @@ class WhisperSTT:
         
         # Processing state
         self._processing_lock = asyncio.Lock()
+        self._sync_lock = threading.Lock()
     
     async def initialize(self) -> None:
         """Initialize the Whisper model"""
@@ -81,6 +97,73 @@ class WhisperSTT:
             device=self.device,
             compute_type=self.compute_type,
         )
+    
+    def _read_audio_bytes(self, data: bytes) -> Tuple[np.ndarray, int]:
+        """
+        Load bytes (wav/mp3/ogg/webm if libsndfile supports) into mono float32 @ native sr.
+        We'll resample on-the-fly for the model if needed.
+        """
+        if sf is None:
+            raise ImportError("soundfile is required for audio decoding. Install with: pip install soundfile")
+        
+        with sf.SoundFile(io.BytesIO(data)) as f:
+            audio = f.read(dtype="float32", always_2d=False)
+            sr = f.samplerate
+        if audio.ndim > 1:
+            audio = np.mean(audio, axis=1)  # mono
+        return audio, sr
+
+    def _resample_audio(self, audio: np.ndarray, sr: int) -> Tuple[np.ndarray, int]:
+        """Lightweight linear resampling to target sample rate."""
+        target_sr = self.sample_rate
+
+        if sr == target_sr:
+            return audio, sr
+
+        num_samples = len(audio)
+        if num_samples == 0:
+            return audio.astype(np.float32), target_sr
+
+        duration = num_samples / sr
+        target_samples = max(1, int(round(duration * target_sr)))
+
+        # Simple linear interpolation resample; fast and dependency-free.
+        source_positions = np.linspace(0.0, 1.0, num=num_samples, endpoint=False)
+        target_positions = np.linspace(0.0, 1.0, num=target_samples, endpoint=False)
+        resampled = np.interp(target_positions, source_positions, audio)
+        return resampled.astype(np.float32), target_sr
+    
+    def transcribe_bytes(self, data: bytes) -> dict:
+        """
+        Transcribe an audio blob (synchronous) and return a dict with {text, language}.
+        Used by the WebUI server.
+        """
+        if not self.initialized:
+            # Synchronous initialization for WebUI compatibility
+            self.logger.info(f"Loading Whisper model: {self.model_name}")
+            self.model = faster_whisper.WhisperModel(
+                self.model_name,
+                device=self.device,
+                compute_type=self.compute_type,
+            )
+            self.initialized = True
+            self.logger.info("Whisper model loaded successfully")
+
+        with self._sync_lock:
+            audio, sr = self._read_audio_bytes(data)
+            audio, sr = self._resample_audio(audio, sr)
+
+            segments, info = self.model.transcribe(
+                audio,
+                language=None if self.language == "auto" else self.language,
+                vad_filter=self.vad_filter,
+            )
+        text = "".join(seg.text for seg in segments)
+
+        return {
+            "text": text.strip(),
+            "language": (info.language or "und"),
+        }
     
     async def transcribe(
         self, 

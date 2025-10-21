@@ -45,15 +45,71 @@ class FrenchTutorApp {
     
     async init() {
         // Setup event listeners
-        this.talkBtn.addEventListener('mousedown', () => this.startRecording());
-        this.talkBtn.addEventListener('mouseup', () => this.stopRecording());
-        this.talkBtn.addEventListener('touchstart', (e) => {
+        this.talkBtn.style.touchAction = 'none';
+        const handlePointerDown = (e) => {
             e.preventDefault();
+            try {
+                if (this.talkBtn.setPointerCapture) {
+                    this.talkBtn.setPointerCapture(e.pointerId);
+                }
+            } catch (_) {
+                // ignore if pointer capture fails
+            }
             this.startRecording();
-        });
-        this.talkBtn.addEventListener('touchend', (e) => {
+        };
+        const handlePointerUp = (e) => {
             e.preventDefault();
+            try {
+                if (this.talkBtn.releasePointerCapture) {
+                    this.talkBtn.releasePointerCapture(e.pointerId);
+                }
+            } catch (_) {
+                // ignore if pointer capture fails
+            }
             this.stopRecording();
+        };
+        this.talkBtn.addEventListener('pointerdown', handlePointerDown);
+        this.talkBtn.addEventListener('pointerup', handlePointerUp);
+        this.talkBtn.addEventListener('pointerleave', (e) => {
+            try {
+                if (this.talkBtn.releasePointerCapture) {
+                    this.talkBtn.releasePointerCapture(e.pointerId);
+                }
+            } catch (_) {
+                // ignore
+            }
+            if (this.isRecording) {
+                this.stopRecording();
+            }
+        });
+        this.talkBtn.addEventListener('pointercancel', (e) => {
+            try {
+                if (this.talkBtn.releasePointerCapture) {
+                    this.talkBtn.releasePointerCapture(e.pointerId);
+                }
+            } catch (_) {
+                // ignore
+            }
+            if (this.isRecording) {
+                this.stopRecording();
+            }
+        });
+
+        this.talkBtn.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                e.preventDefault();
+                if (!this.isRecording) {
+                    this.startRecording();
+                }
+            }
+        });
+        this.talkBtn.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                e.preventDefault();
+                if (this.isRecording) {
+                    this.stopRecording();
+                }
+            }
         });
         
         this.autoModeCheckbox.addEventListener('change', (e) => {
@@ -242,7 +298,7 @@ class FrenchTutorApp {
             const response = await fetch('/api/speak', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text, speed })
+                body: JSON.stringify({ text, speed, language: this.targetLang })
             });
             
             if (!response.ok) {
